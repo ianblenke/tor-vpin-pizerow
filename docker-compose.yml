@@ -1,0 +1,18 @@
+version: '2.1'
+
+volumes:
+
+  config:
+    driver: local
+
+services:
+
+  tor-vpin-pizerow:
+    container_name: tor-vpin-pizerow
+    hostname: tor-vpin-pizerow
+    build: .
+    image: sofwerx/tor-vpin-pizerow
+    command: sleep 86400
+    volumes:
+      - config:/config
+
