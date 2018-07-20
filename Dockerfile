@@ -8,7 +8,9 @@ WORKDIR openwrt
 
 RUN apt-get install -y gawk wget time python-pip
 
+RUN make download
+
 COPY .config .config
 ENV FORCE_UNSAFE_CONFIGURE=1
 RUN make oldconfig
-RUN make V=s
+RUN make V=s -j$(nproc)
