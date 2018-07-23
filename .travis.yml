@@ -31,3 +31,7 @@ deploy:
   on:
     tags: true
     repo: "${TRAVIS_REPO_SLUG}"
+notifications:
+  slack:
+    rooms:
+      secure: MMMEiDfneOSgtpr1Giuo+j3Df5fVO9rwDNv0zgtHCSkOdTLavRFMnnA/HlnCsBJyH23gL1vV5wSUP98lSpBpy2bA5O8BACUgGLp2+3nSZzET9gVy0iPMk+DSrjAga/KIIIiV8d39UWBtnDbkLiooGspisH820eoa/Fb6np3hd14NWMPvpz2VcZybALi07hzqDq21mInfUZaflIhGxfCbpt4PjivLzGrJKigNpctpTimTvXnjlfaH5wdMoco/cLJgJPBjZBrfX3ZCJPW5MgnD3baA1ZvYeULq1g+jSIe6vEQJFCf7BIzakSWKg1uAT1dA+3oetOWhOi1BXLOFW6pWyomYyAkawnUrx3UP8L0C4im2dvBKX5/8qg9K9fVTazBE1ZCJztFdd/RRLEXIqxwU8uUK24slox1vswl0gjxXE/uleHyZ/dZAOFfH0WybLwY7Wd/WKTV0rQYC5kdUOQVZmCj08VkgFG9ciPbwe4VDeNrZaYFxeCDyOc76VwLb84uaqWPMyiJ4YsYV/zPgrJXne821iRV6niJa9vdkvaB9eyID9Xkvl9MOHiIXhL9Nr0D2uehs6IVOMZV5hpiNcnN8vLEaFHtqmfcwAz5cPmzvADLFN+mz+xvWrKMKqp9El2gTsuWrKM+YW7aZMGDrMmKkTSWAevvEbT7vRVCqObcCWro=
