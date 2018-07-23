@@ -18,7 +18,4 @@ ADD files/ files/
 
 RUN make image FILES=files/ PACKAGES="${PACKAGES}"
 
-VOLUME /outputs
-
-#CMD cp /imagebuilder/build_dir/target-arm_arm1176jzf-s+vfp_musl-1.1.16_eabi/linux-brcm2708_bcm2708/tmp/lede-17.01.5-brcm2708-bcm2708-rpi-ext4-sdcard.img /outputs/
-CMD cp /imagebuilder/build_dir/*/*/*/*.img /outputs/
+CMD sleep 1800

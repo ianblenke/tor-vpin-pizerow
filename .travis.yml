@@ -12,10 +12,8 @@ before_script:
 - rm -f .dm
 script:
 - export COMPOSE_PROJECT_NAME=torvpinpizerow
-- docker-compose build tor-vpin-pizerow
-- docker-compose up --force-recreate tor-vpin-pizerow
-- docker cp tor-vpin-pizerow:/imagebuilder/build_dir/*/*/*/*.img /outputs/
-- cp /outputs/*.img tor-vpin-pizero_${TRAVIS_TAG}.img
+- make
+- cp tor-vpin-pizero.img tor-vpin-pizero_${TRAVIS_TAG}.img
 after_success:
 - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 - docker push sofwerx/tor-vpin-pizerow:${TRAVIS_TAG}

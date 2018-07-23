@@ -21,7 +21,7 @@ This makefile simply runs:
     docker-compose build
     docker-compose up --force-recreate
 
-When run from a machine with a docker-engine that can write to locally referenced volumes, this generates an `.img` file in the `outputs/` folder
+When run from a machine with a docker-engine that can write to locally referenced volumes, this generates an `.img` file named `tor-vpin-pizerow.img`.
 
 Strongly recommend installing and running Etcher.io to flash the resultant `outputs/*.img` file to your SDCARD:
 
