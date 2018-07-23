@@ -14,10 +14,10 @@ script:
 - export COMPOSE_PROJECT_NAME=torvpinpizerow
 - docker-compose build tor-vpin-pizerow
 - docker-compose up -d --force-recreate tor-vpin-pizerow
+- cp ./outputs/*.img tor-vpin-pizero_${TRAVIS_TAG}.img
 after_success:
 - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 - docker push sofwerx/tor-vpin-pizerow:${TRAVIS_TAG}
-- cp outputs/*.img tor-vpin-pizero_${TRAVIS_TAG}.img
 branches:
   only:
   - master
