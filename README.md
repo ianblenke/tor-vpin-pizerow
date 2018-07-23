@@ -1,6 +1,6 @@
 # tor-vpin-pizerow
 
-[![Build Status](https://travis-ci.org/sofwerx/tor-vpin-pizerow?branch=master)](https://travis-ci.org/sofwerx/tor-vpin-pizerow)
+[![Build Status](https://travis-ci.org/sofwerx/tor-vpin-pizerow.svg?branch=master)](https://travis-ci.org/sofwerx/tor-vpin-pizerow)
 
 ## TOR VPiN for the Raspberry Pi Zero W
 
