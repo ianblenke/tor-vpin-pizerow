@@ -11,8 +11,18 @@ services:
     container_name: tor-vpin-pizerow
     hostname: tor-vpin-pizerow
     build: .
-    image: sofwerx/tor-vpin-pizerow
-    command: sleep 86400
+    image: sofwerx/tor-vpin-pizerow:latest
     volumes:
       - config:/config
+      - ./outputs:/outputs
+
+#  source:
+#    container_name: source
+#    hostname: source
+#    build:
+#      context: source/
+#      dockerfile: Dockerfile.source
+#    image: sofwerx/tor-vpin-pizerow:source
+#    command: sleep 86400
+
 

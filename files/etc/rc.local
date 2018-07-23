@@ -1,0 +1,79 @@
+#!/bin/sh
+#if ! grep modules-load=dwc2,g_ether /boot/cmdline.txt ; then
+#  # Enable USB On-The-Go and gadget ethernet modules on boot
+#  sed -e 's/$/ modules-load=dwc2,g_ether/' /boot/cmdline.txt
+#  reboot
+#fi
+if ! grep dtoverlay=dwc2 /boot/config.txt ; then
+  # Enable USB On-The-Go
+  echo dtoverlay=dwc2 | tee -a /boot/config.txt
+  sync
+fi
+if ! grep dwc2 /etc/modules ; then
+  # Enable kernel modules for USB On-The-Go and Ethernet
+  echo dwc2 | tee -a /etc/modules
+  echo g_ether | tee -a /etc/modules
+  sync
+fi
+uci set wireless.@wifi-device[0].disabled=0
+uci commit wireless
+wifi
+sync
+uci set network.lan.proto=dhcp
+# Adds usb0 to the network bridge
+uci set network.lan.ifname="`uci get network.lan.ifname` usb0"
+# Commits the changes to /etc/config/network
+uci commit network
+/etc/init.d/network restart
+sync
+# Initialize the luci lua interface config if it is empty
+if [ ! -s /etc/config/luci ] ; then
+cat <<EOF > /etc/config/luci
+config core 'main'
+    option lang 'auto'
+    option resourcebase '/luci-static/resources'
+    option mediaurlbase '/luci-static/openwrt.org'
+
+config extern 'flash_keep'
+    option uci '/etc/config/'
+    option dropbear '/etc/dropbear/'
+    option openvpn '/etc/openvpn/'
+    option passwd '/etc/passwd'
+    option opkg '/etc/opkg.conf'
+    option firewall '/etc/firewall.user'
+    option uploads '/lib/uci/upload/'
+
+config internal 'languages'
+
+config internal 'sauth'
+    option sessionpath '/tmp/luci-sessions'
+    option sessiontime '3600'
+
+config internal 'ccache'
+    option enable '1'
+
+config internal 'themes'
+    option Bootstrap '/luci-static/bootstrap'
+    option OpenWrt '/luci-static/openwrt.org'
+
+config internal 'apply'
+    option rollback '30'
+    option holdoff '4'
+    option timeout '5'
+    option display '1.5'
+
+config internal 'diag'
+    option dns 'lede-project.org'
+    option ping 'lede-project.org'
+    option route 'lede-project.org'
+EOF
+fi
+if [ ! -s /etc/config/uhttpd ]; then
+cat <<EOF > /etc/config/uhttpd
+config 'uhttpd' 'main'
+        option 'listen_http' '80'
+        option 'home'        '/www'
+EOF
+fi
+/etc/init.d/uhttpd start
+exit 0
