@@ -13,7 +13,7 @@ before_script:
 script:
 - export COMPOSE_PROJECT_NAME=torvpinpizerow
 - make
-- cp tor-vpin-pizero.img tor-vpin-pizero_${TRAVIS_TAG}.img
+- cp tor-vpin-pizerow.img tor-vpin-pizerow_${TRAVIS_TAG}.img
 after_success:
 - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 - docker push sofwerx/tor-vpin-pizerow:${TRAVIS_TAG}
@@ -26,7 +26,7 @@ deploy:
   skip_cleanup: true
   api_key: "${GITHUB_TOKEN}"
   file:
-  - tor-vpin-pizero_${TRAVIS_TAG}.img
+  - tor-vpin-pizerow_${TRAVIS_TAG}.img
   on:
     tags: true
     repo: "${TRAVIS_REPO_SLUG}"
