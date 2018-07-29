@@ -962,3 +962,4 @@ dtparam=spi=on
 
 gpu_mem=1
 dtoverlay=dwc2
+dtparam=i2c_baudrate=1000000
