@@ -54,7 +54,7 @@ RUN sed -i \
         -e 's/# CONFIG_BCM2835_DEVGPIOMEM is not set/CONFIG_BCM2835_DEVGPIOMEM=y/' \
         target/linux/brcm2708/bcm2708/config-4.4
 
-RUN make V=s -j$(nproc)
+RUN make -j$(nproc)
 
 RUN apt-get update
 RUN apt-get install -y subversion build-essential libncurses5-dev zlib1g-dev gawk git ccache gettext libssl-dev xsltproc wget unzip python curl aria2 screen ncftp time
