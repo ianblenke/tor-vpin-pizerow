@@ -31,6 +31,8 @@ fi
   /etc/init.d/led restart
   uci commit system
   /etc/init.d/system restart
+  # Only bind the avahi daemon to the lan bridge interface
+  sed -i -e "s/use-ipv4=yes/use-ipv4=yes\nallow-interfaces=br-lan/" /etc/avahi/avahi-daemon.conf
   /etc/init.d/avahi-daemon restart
   # Enable the wifi interface
   uci set wireless.@wifi-device[0].disabled=0
