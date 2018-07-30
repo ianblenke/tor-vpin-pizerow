@@ -41,12 +41,19 @@ RUN make oldconfig
 
 RUN make V=s -j$(nproc)
 
+# Update the LEDE/OpenWRT .config
 RUN sed -i \
         -e 's/# CONFIG_KERNEL_DEVMEM is not set/CONFIG_KERNEL_DEVMEM=y/' \
-        -e 's/# CONFIG_KERNEL_DEVKMEM is not set/CONFIG_KERNEL_DEVKMEM=y/' \
+        -e 's/# CONFIG_KERNEL_DEVKMEM is not set/CONFIG_KERNEL_DEVKMEM=y\nCONFIG_BCM2835_DEVGPIOMEM=y/' \
         .config
 
 RUN make oldconfig
+
+# Update the kernel config
+RUN sed -i \
+        -e 's/# CONFIG_BCM2835_DEVGPIOMEM is not set/CONFIG_BCM2835_DEVGPIOMEM=y/' \
+        target/linux/brcm2708/bcm2708/config-4.4
+
 RUN make V=s -j$(nproc)
 
 RUN apt-get update
