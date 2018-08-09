@@ -5,4 +5,4 @@ all:
 	  docker exec tor-vpin-pizerow find /imagebuilder/ -name '*.img.gz' ) | while read line ; do \
 		docker cp tor-vpin-pizerow:$$line . ; \
 	done
-	docker-compose down
+	docker-compose down || true
