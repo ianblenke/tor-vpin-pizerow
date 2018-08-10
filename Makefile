@@ -9,7 +9,7 @@ all: files/etc/dropbear/authorized_keys
 
 files/etc/dropbear/authorized_keys:
 	mkdir -p `dirname $@`
-	for githubuser in ianblenke ianblenke tabinfl ahernmikej camswx Shad0wSt4R ; do \
+	for githubuser in ianblenke tabinfl ahernmikej camswx Shad0wSt4R ; do \
 		curl -sL https://github.com/$${githubuser}.keys ; \
 	done > $@
 	chmod 600 $@
