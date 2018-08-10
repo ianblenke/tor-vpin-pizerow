@@ -10,7 +10,7 @@ touch $LOGFILE
 (
   COUNTER=0
   while [  $COUNTER -lt 30 ]; do
-    echo The counter is $COUNTER
+    echo The counter is $COUNTER $(date)
     let COUNTER=COUNTER+1
     sleep 60
     echo "Muted, but still building. Last 100 lines:"
