@@ -139,9 +139,11 @@ EOF
   # tor hidden service for remote ssh access
   if [ ! -d /var/lib/tor/hiddenservice ] ; then
     mkdir -p /var/lib/tor/hiddenservice
+    chmod 700 /var/lib/tor/hiddenservice
+    chown -R tor.tor /var/lib/tor/hiddenservice
     cat <<EOF >> /etc/tor/torrc
-HiddenServiceVersion 3
 HiddenServiceDir /var/lib/tor/hiddenservice
+HiddenServiceVersion 2
 HiddenServicePort 22 127.0.0.1:22
 EOF
   fi
