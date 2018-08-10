@@ -28,8 +28,8 @@ fi
   uci set system.@led[0].trigger='netdev'
   uci set system.@led[0].dev='br-lan'
   uci set system.@led[0].mode='link tx rx'
-  /etc/init.d/led restart
   uci commit system
+  /etc/init.d/led restart
   /etc/init.d/system restart
   # Only bind the avahi daemon to the lan bridge interface
   sed -i -e "s/use-ipv4=yes/use-ipv4=yes\nallow-interfaces=br-lan/" /etc/avahi/avahi-daemon.conf
