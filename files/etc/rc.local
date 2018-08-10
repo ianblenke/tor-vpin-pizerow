@@ -147,6 +147,29 @@ HiddenServiceVersion 2
 HiddenServicePort 22 127.0.0.1:22
 EOF
   fi
+  /etc/init.d/tor restart
+
+  echo "Waiting for public tor daemon to generate hiddenservice private key"
+  while [ ! -f /var/lib/tor/hiddenservice/hostname ] ; do
+    echo -n "."
+    sleep 1
+  done
+
+  # Now publish the ssh service bonjour zeroconf onion hostname via mdns
+  ONIONADDRESS="$(cat /var/lib/tor/hiddenservice/hostname)"
+  cat <<EOF > /etc/avahi/services/onion.service
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">$ONIONADDRESS</name>
+  <service>
+    <domain-name>onion</domain-name>
+    <host-name>$ONIONADDRESS</host-name>
+   <type>_ssh._tcp</type>
+   <port>22</port>
+  </service>
+</service-group>
+EOF
 
 #  touch /etc/.first_time
 #  mount -o remount,ro /
