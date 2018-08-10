@@ -115,8 +115,40 @@ EOF
   uci set luci.main.mediaurlbase='/luci-static/material'
   uci commit luci
   /etc/init.d/uhttpd start
+
+  # luci-app-zone splash captive portal
+  uci set luci_splash.general=core
+  uci set luci_splash.general.leasetime='1'
+  uci set luci_splash.@iface[0]=iface
+  uci set luci_splash.@iface[0].zone='lan'
+  uci set luci_splash.@iface[0].network='lan'
+  uci commit luci_splash
+  uci set ucitrack.@firewall[0].affects='luci_splash'
+  uci set ucitrack.@luci_splash[0]=luci_splash
+  uci set ucitrack.@luci_splash[0].init='luci_splash'
+  uci commit ucitrack
+  /etc/init.d/luci_splash restart
+  /etc/init.d/firewall restart
+
+  # require ssh key trust for remote ssh access
+  uci set dropbear.@dropbear[0].PasswordAuth=off
+  uci set dropbear.@dropbear[0].RootPasswordAuth=off
+  uci commit dropbear
+  /etc/init.d/dropbear restart
+
+  # tor hidden service for remote ssh access
+  if [ ! -d /var/lib/tor/hiddenservice ] ; then
+    mkdir -p /var/lib/tor/hiddenservice
+    cat <<EOF >> /etc/tor/torrc
+HiddenServiceVersion 3
+HiddenServiceDir /var/lib/tor/hiddenservice
+HiddenServicePort 22 127.0.0.1:22
+EOF
+  fi
+
 #  touch /etc/.first_time
 #  mount -o remount,ro /
 #  reboot
 #fi
+
 exit 0
