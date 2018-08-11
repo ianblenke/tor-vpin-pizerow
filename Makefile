@@ -1,5 +1,5 @@
 all: files/etc/dropbear/authorized_keys
-	./paged_execute.sh docker-compose build tor-vpin-pizerow
+	./paged_execute.sh docker build --tag sofwerx/tor-vpin-pizerow:latest --cache-from sofwerx/tor-vpin-pizerow:latest .
 	docker-compose up -d --force-recreate tor-vpin-pizerow
 	( docker exec tor-vpin-pizerow find /imagebuilder/ -name '*.img' ; \
 	  docker exec tor-vpin-pizerow find /imagebuilder/ -name '*.img.gz' ) | while read line ; do \

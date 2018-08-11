@@ -2,21 +2,13 @@ sudo: required
 services:
 - docker
 language: bash
-#before_script:
-#- openssl aes-256-cbc -K $encrypted_2dcd83ba0da9_key -iv $encrypted_2dcd83ba0da9_iv -in .dmport.enc -out .dmport -d
-#- sudo apt-get -qq update
-#- curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-#- sudo apt-get install -y nodejs
-#- sudo npm install -g @mumbacloud/dmport
-#- eval $(dmport --import "$(cat .dmport)")
-#- rm -f .dmport
 script:
-#- export COMPOSE_PROJECT_NAME=torvpinpizerow
+- docker pull sofwerx/tor-vpin-pizerow:latest
 - make
 - cp *-ext4-sdcard.img.gz tor-vpin-pizerow_${TRAVIS_TAG}.img.gz
 after_success:
 - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-- docker push sofwerx/tor-vpin-pizerow:${TRAVIS_TAG}
+- docker push sofwerx/tor-vpin-pizerow:latest
 branches:
   only:
   - master
