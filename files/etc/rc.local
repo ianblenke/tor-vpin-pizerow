@@ -169,8 +169,11 @@ EOF
     mkdir -p /var/lib/tor/hiddenservice
     chmod 700 /var/lib/tor/hiddenservice
     chown -R tor.tor /var/lib/tor/hiddenservice
-    cat <<EOF >> /etc/tor/torrc
+    if ! grep -e '^HiddenService' /etc/tor/torrc > /dev/null 2>&1; then
+      cat <<EOF >> /etc/tor/torrc
 HiddenServiceDir /var/lib/tor/hiddenservice
+# We can try the longer v3 onion addresses later by bumping this from 2 to 3
+# (assuming the tor we are using is capable of it)
 HiddenServiceVersion 2
 HiddenServicePort 22 127.0.0.1:22
 EOF
