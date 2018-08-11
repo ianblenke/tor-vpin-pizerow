@@ -20,15 +20,30 @@ fi
 
 #if [ ! -f /etc/.first_time ]; then
   # Set LED to flash with network activity
-  uci set system.@system[0].hostname='VPiN'
-  uci set system.@led[0]=led
-  uci set system.@led[0].default='0'
-  uci set system.@led[0].name='lan'
-  uci set system.@led[0].sysfs='led0'
-  uci set system.@led[0].trigger='netdev'
-  uci set system.@led[0].dev='br-lan'
-  uci set system.@led[0].mode='link tx rx'
-  uci commit system
+  cat <<EOF > /etc/config/system
+config system
+	option timezone 'UTC'
+	option ttylogin '0'
+	option log_size '64'
+	option urandom_seed '0'
+	option hostname 'VPiN'
+
+config timeserver 'ntp'
+	option enabled '1'
+	option enable_server '0'
+	list server '0.lede.pool.ntp.org'
+	list server '1.lede.pool.ntp.org'
+	list server '2.lede.pool.ntp.org'
+	list server '3.lede.pool.ntp.org'
+
+config led
+	option default '0'
+	option name 'lan'
+	option sysfs 'led0'
+	option trigger 'netdev'
+	option dev 'br-lan'
+	option mode 'link tx rx'
+EOF
   /etc/init.d/led restart
   /etc/init.d/system restart
   # Only bind the avahi daemon to the lan bridge interface
@@ -127,11 +142,14 @@ EOF
   /etc/init.d/uhttpd start
 
   # luci-app-zone splash captive portal
-  uci set luci_splash.general=core
-  uci set luci_splash.general.leasetime='1'
-  uci set luci_splash.@iface[0]=iface
-  uci set luci_splash.@iface[0].zone='lan'
-  uci set luci_splash.@iface[0].network='lan'
+  cat <<EOF > /etc/config/luci_splash
+config core 'general'
+	option leasetime '1'
+
+config iface
+	option zone 'lan'
+	option network 'lan'
+EOF
   uci commit luci_splash
   uci set ucitrack.@firewall[0].affects='luci_splash'
   uci set ucitrack.@luci_splash[0]=luci_splash
