@@ -2,9 +2,9 @@ version: '2.1'
 
 services:
 
-  tor-vpin-pizerow:
-    container_name: tor-vpin-pizerow
-    hostname: tor-vpin-pizerow
+  tor-dfpk-pizerow:
+    container_name: tor-dfpk-pizerow
+    hostname: tor-dfpk-pizerow
     build: .
-    image: sofwerx/tor-vpin-pizerow:latest
+    image: sofwerx/tor-dfpk-pizerow:latest
 

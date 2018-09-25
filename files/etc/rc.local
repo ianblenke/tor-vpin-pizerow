@@ -26,7 +26,7 @@ config system
 	option ttylogin '0'
 	option log_size '64'
 	option urandom_seed '0'
-	option hostname 'VPiN'
+	option hostname 'dfpk'
 
 config timeserver 'ntp'
 	option enabled '1'
