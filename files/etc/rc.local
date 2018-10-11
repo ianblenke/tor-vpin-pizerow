@@ -1,34 +1,91 @@
 #!/bin/sh
-#if ! grep modules-load=dwc2,g_ether /boot/cmdline.txt ; then
-#  # Enable USB On-The-Go and gadget ethernet modules on boot
-#  sed -e 's/$/ modules-load=dwc2,g_ether/' /boot/cmdline.txt
-#  reboot
-#fi
-if ! grep dtoverlay=dwc2 /boot/config.txt ; then
-  # Enable USB On-The-Go
-  echo dtoverlay=dwc2 | tee -a /boot/config.txt
-  sync
+modprobe dwc2
+modprobe g_ether
+if [ -f /.resizing ]; then
+  resize2fs /dev/mmcblk2
+  touch /.resized
 fi
-if ! grep dwc2 /etc/modules ; then
-  # Enable kernel modules for USB On-The-Go and Ethernet
-  echo dwc2 | tee -a /etc/modules
-  echo g_ether | tee -a /etc/modules
-  sync
+if [ ! -f /.resized ]; then
+  echo ", +" | sfdisk --force -N 2 /dev/mmcblk0
+  block detect
+  touch /.resizing
 fi
-uci set wireless.@wifi-device[0].disabled=0
-uci commit wireless
-wifi
-sync
-uci set network.lan.proto=dhcp
-# Adds usb0 to the network bridge
-uci set network.lan.ifname="`uci get network.lan.ifname` usb0"
-# Commits the changes to /etc/config/network
-uci commit network
-/etc/init.d/network restart
-sync
-# Initialize the luci lua interface config if it is empty
-if [ ! -s /etc/config/luci ] ; then
-cat <<EOF > /etc/config/luci
+
+## Enable block mount
+# /etc/init.d/fstab enable
+# block mount
+
+## Enable fsck on boot
+# uci set fstab.@global[0].check_fs='1'
+
+#if [ ! -f /etc/.first_time ]; then
+  # Set LED to flash with network activity
+  cat <<EOF > /etc/config/system
+config system
+	option timezone 'UTC'
+	option ttylogin '0'
+	option log_size '64'
+	option urandom_seed '0'
+	option hostname 'dfpk'
+
+config timeserver 'ntp'
+	option enabled '1'
+	option enable_server '0'
+	list server '0.lede.pool.ntp.org'
+	list server '1.lede.pool.ntp.org'
+	list server '2.lede.pool.ntp.org'
+	list server '3.lede.pool.ntp.org'
+
+config led
+	option default '0'
+	option name 'lan'
+	option sysfs 'led0'
+	option trigger 'netdev'
+	option dev 'br-lan'
+	option mode 'link tx rx'
+EOF
+  /etc/init.d/led restart
+  /etc/init.d/system restart
+  # Only bind the avahi daemon to the lan bridge interface
+  sed -i -e "s/use-ipv4=yes/use-ipv4=yes\nallow-interfaces=br-lan/" /etc/avahi/avahi-daemon.conf
+  /etc/init.d/avahi-daemon restart
+
+  # Turn down the default "LEDE" essid AP
+  uci delete wireless.default_radio0.device
+  uci delete wireless.default_radio0.network
+  uci delete wireless.default_radio0.mode
+  uci delete wireless.default_radio0.ssid
+  uci delete wireless.default_radio0.encryption
+  uci delete wireless.default_radio0
+
+  # Enable the wifi interface
+  uci set wireless.@wifi-device[0].disabled=0
+  uci commit wireless
+  wifi
+  uci set network.lan.proto=dhcp
+
+  # Adds usb0 to the lan network bridge
+  uci set network.lan=interface
+  uci set network.lan.type='bridge'
+  uci set network.lan.ifname='usb0'
+  uci set network.lan._orig_ifname='usb0'
+  uci set network.lan._orig_bridge='true'
+  uci set network.lan.proto='static'
+  uci set network.lan.ipaddr='192.168.42.1'
+  uci set network.lan.netmask='255.255.255.0'
+  # Commits the changes to /etc/config/network
+  uci commit network
+  # Configure the DHCP service on the lan interface
+  uci set dhcp.lan=dhcp
+  uci set dhcp.lan.start='100'
+  uci set dhcp.lan.leasetime='12h'
+  uci set dhcp.lan.interface='lan'
+  uci set dhcp.lan.limit='199'
+  uci commit dhcp
+  /etc/init.d/network restart
+  # Initialize the luci lua interface config if it is empty
+  if [ ! -s /etc/config/luci ] ; then
+    cat <<EOF > /etc/config/luci
 config core 'main'
     option lang 'auto'
     option resourcebase '/luci-static/resources'
@@ -67,13 +124,87 @@ config internal 'diag'
     option ping 'lede-project.org'
     option route 'lede-project.org'
 EOF
-fi
-if [ ! -s /etc/config/uhttpd ]; then
-cat <<EOF > /etc/config/uhttpd
+  fi
+  if [ ! -s /etc/config/uhttpd ]; then
+    cat <<EOF > /etc/config/uhttpd
 config 'uhttpd' 'main'
         option 'listen_http' '80'
         option 'home'        '/www'
 EOF
-fi
-/etc/init.d/uhttpd start
+  fi
+  ## https://github.com/apollo-ng/luci-theme-darkmatter
+  #if [ ! -f luci-theme-darkmatter_0.2-beta-2_all.ipk ]; then
+  #  curl -o luci-theme-darkmatter_0.2-beta-2_all.ipk https://apollo.open-resource.org/downloads/luci-theme-darkmatter_0.2-beta-2_all.ipk
+  #  opkg install luci-theme-darkmatter_0.2-beta-2_all.ipk
+  #fi
+  uci set luci.main.mediaurlbase='/luci-static/material'
+  uci commit luci
+  /etc/init.d/uhttpd start
+
+  # luci-app-zone splash captive portal
+  cat <<EOF > /etc/config/luci_splash
+config core 'general'
+	option leasetime '1'
+
+config iface
+	option zone 'lan'
+	option network 'lan'
+EOF
+  uci commit luci_splash
+  uci set ucitrack.@firewall[0].affects='luci_splash'
+  uci set ucitrack.@luci_splash[0]=luci_splash
+  uci set ucitrack.@luci_splash[0].init='luci_splash'
+  uci commit ucitrack
+  /etc/init.d/luci_splash restart
+  /etc/init.d/firewall restart
+
+  # require ssh key trust for remote ssh access
+  uci set dropbear.@dropbear[0].PasswordAuth=off
+  uci set dropbear.@dropbear[0].RootPasswordAuth=off
+  uci commit dropbear
+  /etc/init.d/dropbear restart
+
+  # tor hidden service for remote ssh access
+  if [ ! -d /var/lib/tor/hiddenservice ] ; then
+    mkdir -p /var/lib/tor/hiddenservice
+    chmod 700 /var/lib/tor/hiddenservice
+    chown -R tor.tor /var/lib/tor/hiddenservice
+    if ! grep -e '^HiddenService' /etc/tor/torrc > /dev/null 2>&1; then
+      cat <<EOF >> /etc/tor/torrc
+HiddenServiceDir /var/lib/tor/hiddenservice
+# We can try the longer v3 onion addresses later by bumping this from 2 to 3
+# (assuming the tor we are using is capable of it)
+HiddenServiceVersion 2
+HiddenServicePort 22 127.0.0.1:22
+EOF
+  fi
+  /etc/init.d/tor restart
+
+  echo "Waiting for public tor daemon to generate hiddenservice private key"
+  while [ ! -f /var/lib/tor/hiddenservice/hostname ] ; do
+    echo -n "."
+    sleep 1
+  done
+
+  # Now publish the ssh service bonjour zeroconf onion hostname via mdns
+  ONIONADDRESS="$(cat /var/lib/tor/hiddenservice/hostname)"
+  cat <<EOF > /etc/avahi/services/onion.service
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">$ONIONADDRESS</name>
+  <service>
+    <domain-name>onion</domain-name>
+    <host-name>$ONIONADDRESS</host-name>
+   <type>_ssh._tcp</type>
+   <port>22</port>
+  </service>
+</service-group>
+EOF
+
+#  touch /etc/.first_time
+#  mount -o remount,ro /
+#  reboot
+#fi
+
 exit 0

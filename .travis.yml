@@ -1,0 +1,28 @@
+sudo: required
+services:
+- docker
+language: bash
+script:
+- docker pull sofwerx/tor-vpin-pizerow:latest
+- make
+- cp *-ext4-sdcard.img.gz tor-vpin-pizerow_${TRAVIS_TAG}.img.gz
+after_success:
+- docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+- docker push sofwerx/tor-vpin-pizerow:latest
+branches:
+  only:
+  - master
+  - "/^v\\d.*$/"
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key: "${GITHUB_TOKEN}"
+  file:
+  - tor-vpin-pizerow_${TRAVIS_TAG}.img.gz
+  on:
+    tags: true
+    repo: "${TRAVIS_REPO_SLUG}"
+notifications:
+  slack:
+    rooms:
+      secure: cUxeeGX3qVhnX+F0q08QYXWrwAZleXd0AJuz3paFRCKpCPjqyw1K5MIl3qnrBxvjCet4Yf/8OrzaNZCTwSvSwdZtMybJm9x3zEJ3FxqohnVbnMKm/Mm7a1ULVLutWF89LDiOBaL+Y3j35SOCcD3NAm6g39MiF0tM08TYqqr3ieLjjgqd0pcwLE8bSBHuGwxmwXN6kyUNCOv2Z5xGwQCOFjlu1B+WqbqfsYthB/vhBQarjOO2HIO79uq1mQs8CxHKvzajeF0m0vHSZfg3u60bnd5IKDT5n9TeVNmkBkxP37gYNjWLNE82/XSDkl5Q4OBqGGR/FgqvThcZ8cOnkKHVrvBNt8CJahe2cHnWIq0jclSOG6jzNz2ISwp9MzAmV8IZM1T7Eiv8xzoHwwOfnBuetnwCjBuPLUbu3doibYdl4kJLQYBb0t4qZTZ7RkbQLkEu4gtxEf9lGLRyGreeWPbSXbhtA9UemZT3Euro31nboNm0ShnI7zSmvrK+V2ajhwhjj2+sMNDhXHwRC6Ms9iA85CHTBTKAkR8DWNjOjo+RkoP1pJMlGznBZ5vdtecJPdtgdgAsRioW4Zc2Wo1P1w48Gq2uRbxyXwGJLYL6r/tb/B+QUuh43KMin+BA57QzhPjZXfXjKJEr5H2o50gNyYSe6v4MRhAQsSLw/dOygz/nVDM=
